@@ -1,35 +1,53 @@
 #include <stdio.h>
 #include <string.h>
-int main (int argc, char *argv[])
-{
-    // argc ±íÊ¾²ÎÊý¸öÊý, *argv[]Ö¸ÕëÊý×é, Ã¿Ò»¸öÖ¸ÕëÖ¸ÏòÒ»¸ö×Ö·û´®
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("error: missing parameter\n");
+        return 1;
+    }
+
+    const char *filename = argc > 2 ? argv[2] : "input.txt";
+    const char *param = argv[1];
+    int count = 0;
+
     FILE *fp;
-    int cnt = 0; // Í³¼ÆÊý
-    if ((fp=fopen(argv[2], "r")) == NULL)
-    {
-        puts("error!\n");
-        return 0;
+    fp = fopen(filename, "r");
+
+    if(fp == NULL) {
+        printf("error: unable to open file %s\n", filename);
+        return 1;
     }
-    if (argv[1][1] == 'w') // Í³¼Æµ¥´Ê
-    {
-        char s[1024];
-        while (fscanf(fp, "%s", s) != EOF)
-        {
-            cnt ++;
-            for (int i = 1; i < strlen(s) - 1; i ++)
-                if (s[i] == ',' && s[i - 1] != ',' && s[i + 1] != ',') 
-                    cnt ++;
+
+    char c;
+    char last = '\0';
+    if (strcmp(param, "-c") == 0) {
+        while((c = fgetc(fp)) != EOF) {
+            if (c != '\r') { // ä¸ç»Ÿè®¡å›žè½¦ç¬¦
+                count++;
+            }
         }
-        printf("µ¥´ÊÊý=%d\n", cnt);
+        printf("å­—ç¬¦æ•°ï¼š%d\n", count);
+    } else if (strcmp(param, "-w") == 0) {
+        while((c = fgetc(fp)) != EOF) {
+            if (c == ' ' || c == '\t' || c == '\n' || c == ',' || c == '.') {
+                // é‡åˆ°ç©ºæ ¼ã€åˆ¶è¡¨ç¬¦ã€æ¢è¡Œç¬¦ã€é€—å·ã€å¥å·ï¼Œè®¤ä¸ºå•è¯ç»“æŸ
+                if (last != ' ' && last != '\t' && last != '\n' && last != ',' && last != '.') {
+                    // å¦‚æžœä¸Šä¸€ä¸ªå­—ç¬¦ä¸æ˜¯ç©ºæ ¼ã€åˆ¶è¡¨ç¬¦ã€æ¢è¡Œç¬¦ã€é€—å·ã€å¥å·ï¼Œåˆ™ç»Ÿè®¡ä¸€ä¸ªå•è¯
+                    count++;
+                }
+            }
+            last = c;
+        }
+        printf("å•è¯æ•°ï¼š%d\n", count);
+    } else {
+        printf("error: invalid parameter\n");
+        return 1;
     }
-    else if (argv[1][1] == 'c') // Í³¼Æ×Ö·û
-    {
-        char c;
-        while ((c = fgetc(fp)) != EOF) cnt ++;
-        printf("×Ö·ûÊý=%d", cnt);
-    }
+
     fclose(fp);
     return 0;
 }
+
 
 
